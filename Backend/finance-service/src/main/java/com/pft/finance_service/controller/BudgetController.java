@@ -5,6 +5,8 @@ import com.pft.finance_service.dto.BudgetRequest;
 import com.pft.finance_service.service.BudgetService;
 import com.pft.finance_service.util.AuthUtil;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,8 +43,8 @@ public class BudgetController {
     @GetMapping("/status/category")
     public ResponseEntity<BudgetService.BudgetStatus> budgetStatusForCategory(
             @RequestParam String category,
-            @RequestParam int year,
-            @RequestParam int month) {
+            @RequestParam @Min(2000) @Max(2100) int year,
+            @RequestParam @Min(1) @Max(12) int month) {
         return ResponseEntity.ok(
                 service.budgetStatus(AuthUtil.currentUserId(), category, year, month)
         );
@@ -51,8 +53,8 @@ public class BudgetController {
     // Dashboard (all categories)
     @GetMapping("/status")
     public ResponseEntity<List<BudgetService.BudgetStatus>> budgetStatusForMonth(
-            @RequestParam int year,
-            @RequestParam int month) {
+            @RequestParam @Min(2000) @Max(2100) int year,
+            @RequestParam @Min(1) @Max(12) int month) {
         return ResponseEntity.ok(
                 service.budgetStatus(AuthUtil.currentUserId(), year, month)
         );

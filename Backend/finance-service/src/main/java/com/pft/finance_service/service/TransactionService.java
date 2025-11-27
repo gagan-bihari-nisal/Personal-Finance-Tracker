@@ -7,6 +7,8 @@ import com.pft.finance_service.exception.ResourceNotFoundException;
 import com.pft.finance_service.util.Type;
 import com.pft.finance_service.repository.TransactionRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -44,6 +46,10 @@ public class TransactionService {
 
     public List<Transaction> list(String userId) {
         return repo.findByUserIdOrderByDateDesc(userId);
+    }
+
+    public Page<Transaction> list(String userId, Pageable pageable) {
+        return repo.findByUserIdOrderByDateDesc(userId, pageable);
     }
 
     public record MonthlySummary(double income, double expense, double savings, boolean overspent) {

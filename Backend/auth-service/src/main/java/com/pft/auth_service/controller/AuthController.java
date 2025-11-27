@@ -17,13 +17,11 @@ import java.util.Map;
 @RestController
 public class AuthController {
 
-    private final UserRepository userRepository;
     private final UserService userService;
     private final AuthenticationManager authentication;
     private final TokenGeneratorFilter tokenGenerator;
 
-    public AuthController(UserRepository userRepository, UserService userService, AuthenticationManager authentication, TokenGeneratorFilter tokenGenerator) {
-        this.userRepository = userRepository;
+    public AuthController(UserService userService, AuthenticationManager authentication, TokenGeneratorFilter tokenGenerator) {
         this.userService = userService;
         this.authentication = authentication;
         this.tokenGenerator = tokenGenerator;

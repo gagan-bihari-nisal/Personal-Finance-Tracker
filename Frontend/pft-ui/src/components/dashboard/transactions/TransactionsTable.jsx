@@ -1,3 +1,5 @@
+import { formatCurrency } from "../../../common/FormatCurrency";
+
 export default function TransactionsTable({ transactions, onEdit, onDelete }) {
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-x-auto">
@@ -22,7 +24,7 @@ export default function TransactionsTable({ transactions, onEdit, onDelete }) {
                   t.type === 'EXPENSE' ? 'text-red-600' : 'text-green-600'
                 }`}
               >
-                {t.type === 'EXPENSE' ? '-' : '+'}₹{Math.abs(t.amount)}
+                {t.type === 'EXPENSE' ? '-' : '+'}{formatCurrency(t.amount)}
               </td>
               <td className="px-4 py-3 text-sm text-gray-700">{t.date}</td>
               <td className="px-4 py-3 text-sm text-gray-700 capitalize">

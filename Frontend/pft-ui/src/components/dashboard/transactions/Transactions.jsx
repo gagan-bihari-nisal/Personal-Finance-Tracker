@@ -14,7 +14,8 @@ export default function Transactions() {
   
 
   const [transactions, setTransactions] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -26,7 +27,7 @@ export default function Transactions() {
   
   const [selectedType, setSelectedType] = useState('ALL');
 
-  const transactionsPerPage = 10;
+  const pageSize = 10;
 
   const now = new Date();
   const currentYear = now.getFullYear();
@@ -42,13 +43,20 @@ export default function Transactions() {
       ? MONTHS.slice(0, currentMonth)
       : MONTHS;
 
-  // Fetch transactions
-  const fetchTransactions = async () => {
+// Fetch transactions with pagination
+  const fetchTransactions = async (page = 0) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get('/finance/transactions');
-      setTransactions(res.data || []);
+      const res = await api.get('/finance/transactions', {
+        params: {
+          page: page,
+          size: pageSize
+        }
+      });
+      setTransactions(res.data?.content || []);
+      setTotalPages(res.data?.totalPages ?? 0);
+      setCurrentPage(page);
     } catch (err) {
       console.error(err);
       setError('Failed to load transactions.');
@@ -58,26 +66,15 @@ export default function Transactions() {
   };
 
   useEffect(() => {
-    fetchTransactions();
+    fetchTransactions(0);
   }, []);
 
-  // Filter transactions
-  const filteredTransactions = transactions.filter((t) => {
-    const transactionDate = new Date(t.date);
-    const yearMatch = selectedYear === transactionDate.getFullYear();
-    const monthMatch = selectedMonth === transactionDate.getMonth() + 1;
-    const typeMatch = selectedType === 'ALL' || t.type === selectedType;
-    return yearMatch && monthMatch && typeMatch;
-  });
-
-  // Pagination
-  const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
-  const startIndex = (currentPage - 1) * transactionsPerPage;
-  const paginatedTransactions = filteredTransactions.slice(startIndex, startIndex + transactionsPerPage);
-
-  const handlePageChange = (page) => {
-    if (page >= 1 && page <= totalPages) setCurrentPage(page);
+  const handlePageChange = (newPage) => {
+    if (newPage >= 0 && newPage < totalPages) {
+      fetchTransactions(newPage);
+    }
   };
+
 
   const handleEdit = (transaction) => {
     setTransactionToEdit(transaction);
@@ -91,10 +88,10 @@ export default function Transactions() {
 
   const confirmDelete = async () => {
     try {
-      await api.delete(`/finance/transactions/${transactionToDelete.id}`);
+await api.delete(`/finance/transactions/${transactionToDelete.id}`);
       setSuccessMessage('Transaction deleted successfully!');
       setTimeout(() => setSuccessMessage(''), 3000);
-      fetchTransactions();
+      fetchTransactions(currentPage);
     } catch (err) {
       console.error(err);
       setError('Failed to delete transaction.');
@@ -127,34 +124,36 @@ export default function Transactions() {
       {showForm && (
         <TransactionForm
           transaction={transactionToEdit}
-          onSuccess={() => {
+onSuccess={() => {
             setSuccessMessage('Transaction added/edited successfully!');
             setTimeout(() => setSuccessMessage(''), 3000);
-            fetchTransactions();
+            fetchTransactions(0);
             setShowForm(false);
             setTransactionToEdit(null);
           }}
         />
       )}
 
-      {loading ? (
+{loading ? (
         <Loader message="Loading transactions..." />
       ) : error ? (
         <p className="text-red-500 text-center py-4">{error}</p>
-      ) : filteredTransactions.length === 0 ? (
+      ) : transactions.length === 0 ? (
         <p className="text-center text-gray-500 py-4">No transactions to display</p>
       ) : (
         <>
           <TransactionsTable
-            transactions={paginatedTransactions}
+            transactions={transactions}
             onEdit={handleEdit}
             onDelete={handleDelete}
           />
-          <Pagination
-            totalPages={totalPages}
-            currentPage={currentPage}
-            onPageChange={handlePageChange}
-          />
+          {totalPages > 1 && (
+            <Pagination
+              totalPages={totalPages}
+              currentPage={currentPage + 1}
+              onPageChange={(page) => handlePageChange(page - 1)}
+            />
+          )}
         </>
       )}
 

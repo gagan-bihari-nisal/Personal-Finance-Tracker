@@ -7,6 +7,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,6 +24,8 @@ import java.util.Map;
 @Component
 public class TokenValidatorFilter extends OncePerRequestFilter {
 
+	@Value("${jwt.secret}")
+	private String secret;
 
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -56,7 +59,6 @@ public class TokenValidatorFilter extends OncePerRequestFilter {
 	}
 
 	private String extractUsername(String token) {
-		String secret = "cmVjaXBlIGJvb2sgd2l0aCByZWNpcGVz";
 		Claims claims = Jwts.parserBuilder().setSigningKey(secret.getBytes(StandardCharsets.UTF_8)).build()
 				.parseClaimsJws(token).getBody();
 

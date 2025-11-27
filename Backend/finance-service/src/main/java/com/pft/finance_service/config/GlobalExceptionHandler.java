@@ -2,6 +2,7 @@ package com.pft.finance_service.config;
 
 import com.pft.finance_service.dto.ErrorResponse;
 import com.pft.finance_service.exception.ResourceNotFoundException;
+import com.pft.finance_service.exception.UnauthorizedException;
 import com.pft.finance_service.exception.ValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,6 +61,19 @@ public class GlobalExceptionHandler {
         );
         errorResponse.setDetails(errors);
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedException(
+            UnauthorizedException ex,
+            WebRequest request) {
+        ErrorResponse errorResponse = new ErrorResponse(
+                HttpStatus.UNAUTHORIZED.value(),
+                ex.getMessage(),
+                "UNAUTHORIZED",
+                request.getDescription(false).replace("uri=", "")
+        );
+        return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler(AuthenticationException.class)

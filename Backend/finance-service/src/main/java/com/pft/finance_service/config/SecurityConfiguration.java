@@ -18,6 +18,9 @@ public class SecurityConfiguration {
 	@Autowired
 	JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 	
+	@Autowired
+	TokenValidatorFilter tokenValidatorFilter;
+	
 	@Bean
 	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
@@ -31,7 +34,7 @@ public class SecurityConfiguration {
 				.authorizeHttpRequests(auth -> auth
 						.anyRequest().authenticated()
 				)
-				.addFilterBefore(new TokenValidatorFilter(), UsernamePasswordAuthenticationFilter.class)
+				.addFilterBefore(tokenValidatorFilter, UsernamePasswordAuthenticationFilter.class)
 				.build();
 	}
 

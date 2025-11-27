@@ -5,6 +5,12 @@ import com.pft.finance_service.dao.Transaction;
 import com.pft.finance_service.dto.TransactionRequest;
 import com.pft.finance_service.service.TransactionService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,8 +33,11 @@ public class TransactionController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Transaction>> list() {
-        return ResponseEntity.ok(service.list(AuthUtil.currentUserId()));
+    public ResponseEntity<Page<Transaction>> list(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("date").descending());
+        return ResponseEntity.ok(service.list(AuthUtil.currentUserId(), pageable));
     }
 
     @PutMapping("/{id}")
@@ -47,14 +56,16 @@ public class TransactionController {
     // Monthly summary (income vs expenses)
     @GetMapping("/summary")
     public ResponseEntity<TransactionService.MonthlySummary> monthlySummary(
-            @RequestParam int year, @RequestParam int month) {
+            @RequestParam @Min(2000) @Max(2100) int year,
+            @RequestParam @Min(1) @Max(12) int month) {
         return ResponseEntity.ok(service.monthlySummary(AuthUtil.currentUserId(), year, month));
     }
 
     // Category-wise summary (good for charts)
     @GetMapping("/category-summary")
-    public ResponseEntity<Map<String, Double>> categorySummary(@RequestParam int year,
-            @RequestParam int month) {
+    public ResponseEntity<Map<String, Double>> categorySummary(
+            @RequestParam @Min(2000) @Max(2100) int year,
+            @RequestParam @Min(1) @Max(12) int month) {
         return ResponseEntity.ok(service.categorySummary(AuthUtil.currentUserId(), year, month));
     }
 }
