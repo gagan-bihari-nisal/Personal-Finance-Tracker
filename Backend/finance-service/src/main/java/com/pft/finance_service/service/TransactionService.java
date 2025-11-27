@@ -3,6 +3,7 @@ package com.pft.finance_service.service;
 import com.pft.finance_service.dao.Transaction;
 import com.pft.finance_service.dto.TransactionRequest;
 import com.pft.finance_service.events.TransactionEventProcessor;
+import com.pft.finance_service.exception.ResourceNotFoundException;
 import com.pft.finance_service.util.Type;
 import com.pft.finance_service.repository.TransactionRepository;
 import jakarta.transaction.Transactional;
@@ -62,7 +63,7 @@ public class TransactionService {
     @Transactional
     public Transaction update(String userId, Long id, TransactionRequest r) {
         Transaction existing = repo.findByIdAndUserId(id, userId)
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Transaction with id " + id + " not found for user " + userId));
 
         existing.setType(r.type());
         existing.setCategoryName(r.categoryName());
@@ -77,7 +78,7 @@ public class TransactionService {
     @Transactional
     public void delete(String userId, Long id) {
         Transaction existing = repo.findByIdAndUserId(id, userId)
-                .orElseThrow(() -> new RuntimeException("Transaction not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Transaction with id " + id + " not found for user " + userId));
         repo.delete(existing);
     }
 

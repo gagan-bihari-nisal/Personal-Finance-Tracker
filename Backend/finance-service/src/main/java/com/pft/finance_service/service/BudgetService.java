@@ -2,6 +2,7 @@ package com.pft.finance_service.service;
 
 import com.pft.finance_service.dao.Budget;
 import com.pft.finance_service.dto.BudgetRequest;
+import com.pft.finance_service.exception.ResourceNotFoundException;
 import com.pft.finance_service.repository.BudgetRepository;
 import com.pft.finance_service.repository.TransactionRepository;
 import com.pft.finance_service.util.Type;
@@ -45,14 +46,14 @@ public class BudgetService {
   // Get a budget for a specific category/month
   public Budget getBudget(String userId, String category, int year, int month) {
     return repo.findByUserIdAndCategoryNameAndYearAndMonth(userId, category, year, month)
-            .orElseThrow(() -> new RuntimeException("Budget not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Budget not found for category " + category + " in " + year + "-" + month));
   }
 
   // Delete a budget
   @Transactional
   public void delete(String userId, Long id) {
     Budget existing = repo.findByIdAndUserId(id, userId)
-            .orElseThrow(() -> new RuntimeException("Budget not found"));
+            .orElseThrow(() -> new ResourceNotFoundException("Budget with id " + id + " not found for user " + userId));
     repo.delete(existing);
   }
 
@@ -62,7 +63,7 @@ public class BudgetService {
   // Single-category check
   public BudgetStatus budgetStatus(String userId, String category, int year, int month) {
     Budget budget = repo.findByUserIdAndCategoryNameAndYearAndMonth(userId, category, year, month)
-            .orElseThrow(() -> new RuntimeException("No budget found for category: " + category));
+            .orElseThrow(() -> new ResourceNotFoundException("No budget found for category " + category + " in " + year + "-" + month));
 
     YearMonth ym = YearMonth.of(year, month);
     LocalDate start = ym.atDay(1);

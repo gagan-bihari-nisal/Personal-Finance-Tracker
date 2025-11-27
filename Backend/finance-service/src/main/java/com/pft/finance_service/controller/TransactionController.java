@@ -5,9 +5,7 @@ import com.pft.finance_service.dao.Transaction;
 import com.pft.finance_service.dto.TransactionRequest;
 import com.pft.finance_service.service.TransactionService;
 import jakarta.validation.Valid;
-import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,13 +21,8 @@ public class TransactionController {
     }
 
     @PostMapping
-    public ResponseEntity<Transaction> add(@RequestBody @Valid TransactionRequest req, BindingResult bindingResults) throws Exception {
-        if (bindingResults.hasErrors()) {
-            throw new Exception(bindingResults.getAllErrors().stream().map(DefaultMessageSourceResolvable::getDefaultMessage)
-                    .reduce((e1, e2) -> e1 + " " + e2).orElse(""));
-        }
+    public ResponseEntity<Transaction> add(@RequestBody @Valid TransactionRequest req) {
         String userId = AuthUtil.currentUserId();
-
         return ResponseEntity.ok(service.add(userId, req));
     }
 

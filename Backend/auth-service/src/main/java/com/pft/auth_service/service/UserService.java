@@ -1,5 +1,8 @@
 package com.pft.auth_service.service;
 
+import com.pft.auth_service.dto.ErrorResponse;
+import com.pft.auth_service.exception.DuplicateResourceException;
+import com.pft.auth_service.exception.ResourceNotFoundException;
 import com.pft.auth_service.model.User;
 import com.pft.auth_service.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,10 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class UserService implements UserDetailsService {
@@ -25,9 +25,12 @@ public class UserService implements UserDetailsService {
 	@Autowired
 	PasswordEncoder passwordEncoder;
 	
-	public User registerUser(User user) throws Exception {
+	public User registerUser(User user) {
 		if (userRepo.existsByUsername(user.getUsername())) {
-			throw new Exception(user.getUsername() + " is already taken.");
+			throw new DuplicateResourceException("Username '" + user.getUsername() + "' is already taken.");
+		}
+		if (userRepo.existsByEmail(user.getEmail())) {
+			throw new DuplicateResourceException("Email '" + user.getEmail() + "' is already registered.");
 		}
 		
 		User userDao = new User();
@@ -52,13 +55,15 @@ public class UserService implements UserDetailsService {
 		}
 	}
 
-	public Map<String, String > getEmailByUsername(String username) {
-		Optional<User> user = userRepo.findByUsername(username);
-		if (user.isPresent()) {
-			return user.get().getEmail().transform(email -> Map.of("email", email));
-		} else {
-			throw new UsernameNotFoundException("User not found with id: " + username);
-		}
+	public Map<String, String> getUserByUsername(String username) {
+		return userRepo.findByUsername(username)
+				.map(user -> {
+					Map<String, String> userMap = new HashMap<>();
+					userMap.put("username", user.getUsername());
+					userMap.put("email", user.getEmail());
+					return userMap;
+				})
+				.orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
 	}
 
 
